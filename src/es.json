@@ -1,0 +1,45 @@
+GET /testsetindex/test_set/_search
+{
+    "size" : 0,
+    "aggs" : {
+        "streams" : { 
+            "terms" : { 
+              "field" : "stream"
+            },        
+            "aggs": { 
+                "baselines" :{
+                    "terms" : { 
+                        "field" : "baseline"
+                    },
+                    "aggs": { 
+                        "platforms" :{
+                            "terms" : { "field" : "platform"},
+                            "aggs": { 
+                                "passes": { 
+                                    "sum": {
+                                        "field": "testsPassed"
+                                    }
+                                    },
+                                "failures": { 
+                                    "sum": {
+                                        "field": "testsFailed"
+                                    }
+                                },
+                                "passfailure_ratio": {
+                                "bucket_script": {
+                                    "buckets_path": {
+                                        "total_passes": "passes",
+                                        "total_failures": "failures"
+                                    },
+                                    "script": "total_passes/total_failures"
+                                }
+                            }
+                            }
+                           
+                        }
+                    }
+                }                 
+            }
+        }
+    }
+}
