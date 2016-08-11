@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+html, body {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    min-height: 100%;
+    overflow: visible;
+}
+
+.quad-div {
+    width: 50%;
+    height: 50%;
+    margin: 0px -1px;
+}
+
+.pull-left {
+    float: left;
+}
+
+.pull-right {
+    float: right;
+}
+</style>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+function drawChart(jsonData, label, elementid){
+    var options = {
+        title: label,
+        titleTextStyle: {
+            fontSize: 35
+        },
+        annotations: {
+          textStyle: {
+            fontName: 'Times-Roman',
+            fontSize: 18,
+            bold: true,
+            // The color of the text.
+            color: '#871b47',
+            // The color of the text outline.
+            auraColor: '#d799ae',
+            // The transparency of the text.
+            opacity: 0.8
+          }
+        }
+    };
+    var datatable = new google.visualization.DataTable(jsonData);
+    var chart = new google.visualization.LineChart(document.getElementById(elementid));
+    chart.draw(datatable, options);
+}
+
+$.ajax({
+    url: 'https://www.google.com/jsapi?callback',
+    cache: true,
+    dataType: 'script',
+    success: function(){
+        console.log("success");
+        google.load('visualization', '1', {packages:['corechart'], 'callback' : function(){
+            $.ajax({
+                type: "GET",
+                dataType: "json",
+                url: 'http://127.0.0.1:5000/dash-q/dataservice/streams_chart?stream=Q000',
+                success: function(jsonData) { drawChart(jsonData, "Q000", "chart_div_s0"); }
+            });
+            $.ajax({
+                type: "GET",
+                dataType: "json",
+                url: 'http://127.0.0.1:5000/dash-q/dataservice/streams_chart?stream=Q001',
+                success: function(jsonData) { drawChart(jsonData, "Q001", "chart_div_s1"); }
+            });
+            $.ajax({
+                type: "GET",
+                dataType: "json",
+                url: 'http://127.0.0.1:5000/dash-q/dataservice/streams_chart?stream=Q002',
+                success: function(jsonData) { drawChart(jsonData, "Q002", "chart_div_s2"); }
+            });
+            $.ajax({
+                type: "GET",
+                dataType: "json",
+                url: 'http://127.0.0.1:5000/dash-q/dataservice/streams_chart?stream=Q003',
+                success: function(jsonData) { drawChart(jsonData, "Q003", "chart_div_s3"); }
+            });
+        }});
+        return true;
+    }
+});
+
+
+</script>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <div id="chart_div_s0" class="pull-left quad-div"></div>
+    <div id="chart_div_s1" class="pull-right quad-div"></div>
+    <div id="chart_div_s2" class="pull-left quad-div bottom"></div>
+    <div id="chart_div_s3" class="pull-right quad-div bottom"></div>
+</body>
+</html>

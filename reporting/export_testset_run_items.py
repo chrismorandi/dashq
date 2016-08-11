@@ -1,6 +1,7 @@
 import MySQLdb.cursors
 import re
 import json
+from datetime import datetime
 
 
 query = ("SELECT testset.storm_testset_id, testset.storm_testset_name, "
@@ -20,6 +21,7 @@ query = ("SELECT testset.storm_testset_id, testset.storm_testset_name, "
 
 run_status_order = {"Fail": 0, "Incomplete": 1, "Unknown": 2,
                     "Not Covered": 3, "In Progress": 4, "Not Started": 5, "Pass": 6}
+
 map_result_to_test_set_counter = {"Fail": "testsFailed", "Incomplete": "testsIncomplete", "Unknown": "testsUnknown",
                     "Not Covered": "testsNotCovered", "In Progress": "testsInProgress", "Not Started": "testsNotStarted",
                     "Pass": "testsPassed"}
@@ -34,19 +36,30 @@ def new_test_set(current_test_result, totalsets):
     if match is None:
         return None
     mg = match.groupdict()
+
     test_set = {"testsetId": current_test_result[0],
                 "testsetType": mg["type"],
                 "stream": mg["stream"],
                 "baseline": mg["baseline"],
                 "platform": mg["platform"],
-                "startDate": str(current_test_result[3]),
-                "endDate": str(current_test_result[4]),
+                "startDate": current_test_result[3],
+                "endDate": current_test_result[4] if isinstance(current_test_result[4], datetime)
+                                                                else current_test_result[3],
                 "testsFailed": 0, "testsIncomplete": 0, "testsUnknown": 0, "testsNotCovered": 0,
                 "testsInProgress": 0, "testsNotStarted": 0, "testsPassed": 0
                 }
     totalsets["root"].append(test_set)
     return test_set
 
+from datetime import datetime
+
+def json_serial(obj):
+    """JSON serializer for objects not serializable by default json code"""
+
+    if isinstance(obj, datetime):
+        serial = obj.isoformat()
+        return serial
+    raise TypeError ("Type not serializable")
 
 def export_storm_test_results():
     totalsets = {"root": []}
@@ -70,11 +83,11 @@ def export_storm_test_results():
                 continue
             previous_test_result = None
 
-        if str(current_test_result[3]) < current_test_set["startDate"]:
-            current_test_set["startDate"] = str(current_test_result[3])
+        if current_test_result[3] < current_test_set["startDate"]:
+            current_test_set["startDate"] = current_test_result[3]
 
-        if str(current_test_result[4]) > current_test_set["endDate"]:
-            current_test_set["endDate"] = str(current_test_result[4])
+        if isinstance(current_test_result[4], datetime) and current_test_result[4] > current_test_set["endDate"]:
+            current_test_set["endDate"] = current_test_result[4]
 
         if previous_test_result:
             if previous_test_result[5] == current_test_result[5]:
@@ -88,7 +101,7 @@ def export_storm_test_results():
         previous_test_result = current_test_result
 
     with open("/tmp/out.json", "wt", 10248) as outfile:
-        json.dump(totalsets, outfile)
+        json.dump(totalsets, outfile, default=json_serial)
 
 
 def main():

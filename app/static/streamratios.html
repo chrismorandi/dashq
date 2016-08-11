@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+
+
+google.charts.load('current', {
+  packages: ['corechart', 'line']
+});
+google.charts.setOnLoadCallback(drawChart);
+
+function drawChart() {
+  var options = {
+    chart: {
+      title: 'Q003',
+      subtitle: 'in millions of dollars (USD)'
+    },
+    colors: ['#a52714', '#097138'],
+    series: {
+      0: {
+        lineWidth: 3
+      },
+      1: {
+        lineWidth: 3
+      }
+    },
+    annotations: {
+      textStyle: {
+        fontName: 'Times-Roman',
+        fontSize: 18,
+        bold: true,
+        // The color of the text.
+        color: '#871b47',
+        // The color of the text outline.
+        auraColor: '#d799ae',
+        // The transparency of the text.
+        opacity: 0.8
+      }
+    }
+  };
+
+  var data = new google.visualization.DataTable();
+  data.addColumn('string', 'Build');
+  data.addColumn('number', '45d1');
+  data.addColumn('number', 'mult');
+  data.addColumn('number', 'xwng');
+  data.addColumn({ type: 'string', role: 'annotationText' });
+  data.addColumn({ type: 'boolean', role: 'certainty' });
+  data.addRows(
+    [
+      ["000.12.00", 2.0, 0.8333333333333334, 1.75, "", true],
+      ["000.13.00", 3.4, 6.333333333333333, 3.4, "", true],
+      ["000.14.00", 2.142857142857143, 4.5, 6.333333333333333, "", true],
+      ["000.15.00", 2.6666666666666665, 2.6666666666666665, 4.5, "", true],
+      ["000.16.00", 2.142857142857143, 1.4444444444444444, 2.142857142857143, "", true],
+      ["000.18.00", 1.75, 2.6666666666666665, 6.333333333333333, "", true],
+      ["000.19.00", 2.142857142857143, 1.75, 3.4, "", true],
+      ["000.20.00", 3.4, 2.142857142857143, 1.75, "", true],
+      ["000.21.00", 1.75, 1.0, 3.4, "", true],
+      ["000.22.00", 2.142857142857143, 2.6666666666666665, 3.4, "", false]
+    ]
+  );
+  console.log(data.toJSON());
+
+  var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+  chart.draw(data, options);
+}
+
+</script>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="chart_div"></div>
+
+</body>
+</html>
