@@ -68,7 +68,8 @@ with open('/tmp/out.json') as json_data:
 
 counter = 0
 es = Elasticsearch()
-es.indices.delete("testsetindex")
+
+#es.indices.delete("testsetindex")
 es.indices.create("testsetindex")
 es.indices.put_mapping(doc_type="test_set", body=test_type_mappings, index="testsetindex")
 

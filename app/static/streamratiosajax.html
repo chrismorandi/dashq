@@ -26,7 +26,29 @@ html, body {
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
-function drawChart(jsonData, label, elementid){
+
+function drawBarChart(jsonData){
+    var options = {
+        title: "latest baselines",
+        titleTextStyle: {
+            fontSize: 30
+        },
+        width: 600,
+        height: 300,
+        bar: { groupWidth: '50%' },
+        legend: { position: 'top', maxLines: 5 },
+        series: [{color: 'green', visibleInLegend: true}, {color: 'red', visibleInLegend: true}, {color: 'yellow', visibleInLegend: true}, {color: 'gray', visibleInLegend: true}, {color: 'white', visibleInLegend: false}],
+        isStacked: true,
+        legend: { position: "right" }
+    };
+    var data = google.visualization.arrayToDataTable(jsonData)
+    var chart = new google.visualization.BarChart(document.getElementById('bar_chart_div'));
+    chart.draw(data, options);
+}
+
+
+
+function drawLineChart(jsonData, label, elementid){
     var options = {
         title: label,
         titleTextStyle: {
@@ -43,6 +65,10 @@ function drawChart(jsonData, label, elementid){
             auraColor: '#d799ae',
             // The transparency of the text.
             opacity: 0.8
+          },
+          explorer: {
+            axis: 'horizontal',
+            keepInBounds: true
           }
         }
     };
@@ -56,32 +82,38 @@ $.ajax({
     cache: true,
     dataType: 'script',
     success: function(){
-        console.log("success");
-        google.load('visualization', '1', {packages:['corechart'], 'callback' : function(){
+        google.load('visualization', '1', {packages:['corechart', 'bar'], 'callback' : function(){
+            $.ajax({
+                type: "GET",
+                dataType: "json",
+                url: 'http://127.0.0.1:5000/dash-q/dataservice/streams_bar_chart',
+                success: function(jsonData) { drawBarChart(jsonData.data); }
+            });
             $.ajax({
                 type: "GET",
                 dataType: "json",
                 url: 'http://127.0.0.1:5000/dash-q/dataservice/streams_chart?stream=Q000',
-                success: function(jsonData) { drawChart(jsonData, "Q000", "chart_div_s0"); }
+                success: function(jsonData) { drawLineChart(jsonData, "Q000", "chart_div_s0"); }
             });
             $.ajax({
                 type: "GET",
                 dataType: "json",
                 url: 'http://127.0.0.1:5000/dash-q/dataservice/streams_chart?stream=Q001',
-                success: function(jsonData) { drawChart(jsonData, "Q001", "chart_div_s1"); }
+                success: function(jsonData) { drawLineChart(jsonData, "Q001", "chart_div_s1"); }
             });
             $.ajax({
                 type: "GET",
                 dataType: "json",
                 url: 'http://127.0.0.1:5000/dash-q/dataservice/streams_chart?stream=Q002',
-                success: function(jsonData) { drawChart(jsonData, "Q002", "chart_div_s2"); }
+                success: function(jsonData) { drawLineChart(jsonData, "Q002", "chart_div_s2"); }
             });
             $.ajax({
                 type: "GET",
                 dataType: "json",
                 url: 'http://127.0.0.1:5000/dash-q/dataservice/streams_chart?stream=Q003',
-                success: function(jsonData) { drawChart(jsonData, "Q003", "chart_div_s3"); }
+                success: function(jsonData) { drawLineChart(jsonData, "Q003", "chart_div_s3"); }
             });
+
         }});
         return true;
     }
@@ -95,9 +127,12 @@ $.ajax({
     <title>Title</title>
 </head>
 <body>
-    <div id="chart_div_s0" class="pull-left quad-div"></div>
-    <div id="chart_div_s1" class="pull-right quad-div"></div>
-    <div id="chart_div_s2" class="pull-left quad-div bottom"></div>
-    <div id="chart_div_s3" class="pull-right quad-div bottom"></div>
+    <div style="width: 100%; height: 80%;">
+        <div id="chart_div_s0" class="pull-left quad-div"></div>
+        <div id="chart_div_s1" class="pull-right quad-div"></div>
+        <div id="chart_div_s2" class="pull-left quad-div bottom"></div>
+        <div id="chart_div_s3" class="pull-right quad-div bottom"></div>
+    </div>
+    <div id="bar_chart_div" style="display:block; margin-left:auto; margin-right:auto;" align="center"></div>
 </body>
 </html>
