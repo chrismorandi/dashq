@@ -5,21 +5,19 @@ import json
 query = {
    "size": 0,
    "aggs": {
-      "stream": {
+      "streams": {
          "terms": {
-            "field": "stream",
-            "size": 4
+            "field": "stream"
          },
          "aggs": {
             "recentbaselines": {
                "terms": {
                   "field": "baseline",
-                  "size": 1,
-                  "order": {
-                     "_term": "desc"
-                  }
+                  "size": 5,
+                  "order": {"startDate": "desc"}
                },
                "aggs": {
+                  "startDate" : { "max" : { "field" :"startDate" } },
                   "passes": {
                      "sum": {
                         "field": "testsPassed"
@@ -109,13 +107,21 @@ query = {
    }
 }
 
-def _get_lastbaseline_data(sb):
-    # just get the first item for each stream
-    b = sb["recentbaselines"]["buckets"][0]
-    item = ["{}.{}".format(sb["key"], b["key"]),
-            int(b["passpercentage"]["value"]), int(b["failurepercentage"]["value"]), int(b["inprogresspercentage"]["value"]), int(b["incompletepercentage"]["value"]), int(b["notrunpercentage"]["value"])]
-    print item
-    return item
+def _get_top_5(streams):
+   buckets = []
+   for s in streams:
+      for b in s["recentbaselines"]["buckets"]:
+         buckets.append([b["startDate"]["value_as_string"], s["key"].upper() + "." + b["key"], b])
+   return sorted(buckets, key=lambda t: t[0], reverse=True)[:5]
+
+
+def _get_lastbaseline_data(top_bs):
+    def format_baseline(bs):
+        return [bs[1],
+              float(bs[2]["passpercentage"]["value"]), float(bs[2]["failurepercentage"]["value"]),
+              float(bs[2]["inprogresspercentage"]["value"]), float(bs[2]["incompletepercentage"]["value"]),
+              float(bs[2]["notrunpercentage"]["value"])]
+    return [format_baseline(bs) for bs in top_bs]
 
 def get_data():
     data = [["Baseline", "Passed", "Failed", "Inprogress", "Incomplete", "Not run"]]
@@ -129,7 +135,7 @@ def get_data():
         ['Q002.004.02.01', 60, 15, 25, 0],......
 
         '''
-        data += [_get_lastbaseline_data(s) for s in res["aggregations"]["stream"]["buckets"]]
+        data += _get_lastbaseline_data(_get_top_5(res["aggregations"]["streams"]["buckets"]))
     return json.dumps({"data": data})
 
 

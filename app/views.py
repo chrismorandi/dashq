@@ -6,7 +6,7 @@ from reporting import streams_google_line_chart_dataservice, streams_google_stac
 @app.route('/dash-q/dataservice/streams_chart')
 def stream_chart():
     stream = request.args.get('stream')
-    return Response(response=streams_google_line_chart_dataservice.get_data(stream), mimetype="application/json")
+    return Response(response=streams_google_line_chart_dataservice.get_data(stream, "2016-08-07T00:00:00.000Z"), mimetype="application/json")
 
 
 @app.route('/dash-q/dataservice/streams_bar_chart')

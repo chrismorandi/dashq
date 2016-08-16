@@ -10,7 +10,7 @@ html, body {
 }
 
 .quad-div {
-    width: 50%;
+    width: 100%;
     height: 50%;
     margin: 0px -1px;
 }
@@ -29,13 +29,13 @@ html, body {
 
 function drawBarChart(jsonData){
     var options = {
-        title: "latest baselines",
+        title: "Latest baselines",
         titleTextStyle: {
-            fontSize: 30
+            fontSize: 35
         },
-        width: 600,
-        height: 300,
-        bar: { groupWidth: '50%' },
+        width: 900,
+        height: 400,
+        bar: { groupWidth: '30%' },
         legend: { position: 'top', maxLines: 5 },
         series: [{color: 'green', visibleInLegend: true}, {color: 'red', visibleInLegend: true}, {color: 'yellow', visibleInLegend: true}, {color: 'gray', visibleInLegend: true}, {color: 'white', visibleInLegend: false}],
         isStacked: true,
@@ -98,18 +98,6 @@ $.ajax({
             $.ajax({
                 type: "GET",
                 dataType: "json",
-                url: 'http://127.0.0.1:5000/dash-q/dataservice/streams_chart?stream=Q001',
-                success: function(jsonData) { drawLineChart(jsonData, "Q001", "chart_div_s1"); }
-            });
-            $.ajax({
-                type: "GET",
-                dataType: "json",
-                url: 'http://127.0.0.1:5000/dash-q/dataservice/streams_chart?stream=Q002',
-                success: function(jsonData) { drawLineChart(jsonData, "Q002", "chart_div_s2"); }
-            });
-            $.ajax({
-                type: "GET",
-                dataType: "json",
                 url: 'http://127.0.0.1:5000/dash-q/dataservice/streams_chart?stream=Q003',
                 success: function(jsonData) { drawLineChart(jsonData, "Q003", "chart_div_s3"); }
             });
@@ -127,11 +115,9 @@ $.ajax({
     <title>Title</title>
 </head>
 <body>
-    <div style="width: 100%; height: 80%;">
-        <div id="chart_div_s0" class="pull-left quad-div"></div>
-        <div id="chart_div_s1" class="pull-right quad-div"></div>
-        <div id="chart_div_s2" class="pull-left quad-div bottom"></div>
-        <div id="chart_div_s3" class="pull-right quad-div bottom"></div>
+    <div style="width: 100%; height: 70%;">
+        <div id="chart_div_s0" class="quad-div"></div>
+        <div id="chart_div_s3" class="quad-div bottom"></div>
     </div>
     <div id="bar_chart_div" style="display:block; margin-left:auto; margin-right:auto;" align="center"></div>
 </body>

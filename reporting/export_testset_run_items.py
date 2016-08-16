@@ -4,6 +4,17 @@ import json
 from datetime import datetime
 
 
+expected_tests = (
+    "SELECT testset.storm_testset_id, results.qc_id "
+    "FROM storm_cycle_testset_details testset "
+    "INNER JOIN `storm_cycle_test_result` results ON results.storm_testset_id = testset.storm_testset_id "
+    "WHERE testset.end_date >= '2016-01-01 00:00:00' "
+    "AND testset.storm_testset_name LIKE 'Auto :: e2e.set%%' "
+    "AND testset.storm_testset_name LIKE '%%.inweek.%%' "
+    "AND testset.storm_testset_status != '' "
+)
+
+
 query = ("SELECT testset.storm_testset_id, testset.storm_testset_name, "
          "testset.storm_testset_status, run.start_time, run.end_time, run.qc_id, run.run_status "
          "FROM storm_test_run run "
@@ -19,13 +30,13 @@ query = ("SELECT testset.storm_testset_id, testset.storm_testset_name, "
          "ORDER BY storm_testset_name, run.qc_id, run.start_time")
 
 
+
 run_status_order = {"Fail": 0, "Incomplete": 1, "Unknown": 2,
                     "Not Covered": 3, "In Progress": 4, "Not Started": 5, "Pass": 6}
 
 map_result_to_test_set_counter = {"Fail": "testsFailed", "Incomplete": "testsIncomplete", "Unknown": "testsUnknown",
                     "Not Covered": "testsNotCovered", "In Progress": "testsInProgress", "Not Started": "testsNotStarted",
                     "Pass": "testsPassed"}
-
 
 
 def new_test_set(current_test_result, totalsets):
@@ -61,23 +72,49 @@ def json_serial(obj):
         return serial
     raise TypeError ("Type not serializable")
 
-def export_storm_test_results():
-    totalsets = {"root": []}
-    con = MySQLdb.connect(host='10.20.32.99',
+def _get_sql_connection():
+    return MySQLdb.connect(host='10.20.32.99',
                           port=3306,
                           user='auto_ethan',
                           passwd='useC0nf1gFile',
                           db='ethan_autodb')
+
+
+def _get_testset_collections():
+    con = _get_sql_connection()
+    try:
+        con.query(expected_tests)
+        r = con.store_result()
+        testsets = dict()
+        for i in r.fetch_row(maxrows=0):
+            if not testsets.has_key(i[0]):
+                testsets[i[0]] = set([i[1]])
+            else:
+                testsets[i[0]].add(i[1])
+        return testsets
+    finally:
+        con.close()
+
+def _add_none_run_tests(test_set, testset_tests, tests_recorded):
+    diff = testset_tests.difference(tests_recorded)
+    test_set[map_result_to_test_set_counter["Not Started"]] += len(diff)
+
+def export_storm_test_results():
+    testset_tests = _get_testset_collections()
+    totalsets = {"root": []}
+    con = _get_sql_connection()
     cursor = con.cursor(MySQLdb.cursors.SSCursor)
     cursor.execute(query)
     previous_test_result = cursor.fetchone()
     current_test_set = new_test_set(previous_test_result, totalsets)
-
+    run_tests_for_set = set()
     for current_test_result in cursor:
         # for each test set determined by the testset name
         if current_test_set is None or current_test_result[0] != current_test_set["testsetId"]:
             if previous_test_result:
                 current_test_set[map_result_to_test_set_counter[previous_test_result[6]]] += 1
+                _add_none_run_tests(current_test_set, testset_tests[current_test_set["testsetId"]], run_tests_for_set)
+                run_tests_for_set = set()
             current_test_set = new_test_set(current_test_result, totalsets)
             if current_test_set is None:
                 continue
@@ -97,8 +134,12 @@ def export_storm_test_results():
                     continue
             else:
                 current_test_set[map_result_to_test_set_counter[previous_test_result[6]]] += 1
-
         previous_test_result = current_test_result
+        run_tests_for_set.add(previous_test_result[5])
+    # for the last test result make sure to update the totals
+    if previous_test_result:
+        current_test_set[map_result_to_test_set_counter[previous_test_result[6]]] += 1
+        _add_none_run_tests(current_test_set, testset_tests[current_test_set["testsetId"]], run_tests_for_set)
 
     with open("/tmp/out.json", "wt", 10248) as outfile:
         json.dump(totalsets, outfile, default=json_serial)
@@ -109,4 +150,5 @@ def main():
 
 
 if __name__ == "__main__":
+    #print _get_testset_collections()
     main()

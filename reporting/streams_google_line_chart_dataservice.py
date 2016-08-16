@@ -5,7 +5,20 @@ import json
 query = {
     "size": 0,
     "query": {
-      "match": {"stream" : ""}
+        "bool": {
+            "must": [
+                {
+                    "match": {"stream": ""}
+                },
+                {
+                    "range": {
+                        "startDate": {
+                            "gte": "2016-06-07T00:00:00.000Z"
+                        }
+                    }
+                }
+            ]
+        }
     },
     "aggs": {
         "streams": {
@@ -137,12 +150,12 @@ def _get_row_data(known_platforms, stream):
     return [process_baseline(b) for b in sorted(stream["baseline"]["buckets"], key=itemgetter("key"))]
 
 
-def get_data(stream):
-
+def get_data(stream, start_date):
     es = Elasticsearch()
-    query["query"]["match"]["stream"] = stream
+    query["query"]["bool"]["must"][0]["match"]["stream"] = stream
+    query["query"]["bool"]["must"][1]["range"]["startDate"]["gte"] = start_date
     res = es.search(index="testsetindex", body=query)
-    if res:
+    if res and res["hits"]["total"] > 0:
         stream = res["aggregations"]["streams"]["buckets"][0]
         known_platforms = _get_platforms_for_stream(stream)
         return json.dumps({"cols": _get_column_data(known_platforms),
@@ -151,4 +164,4 @@ def get_data(stream):
         return json.dumps({"cols": "", "rows": ""})
 
 if "__main__":
-    print get_data("q001")
+    print get_data("q001", "2016-08-07T00:00:00.000Z")
