@@ -77,12 +77,21 @@ function drawLineChart(jsonData, label, elementid){
     chart.draw(datatable, options);
 }
 
-$.ajax({
+function loadCharts(){
+    console.log("loading charts")
+    $.ajax({
     url: 'https://www.google.com/jsapi?callback',
     cache: true,
     dataType: 'script',
     success: function(){
         google.load('visualization', '1', {packages:['corechart', 'bar'], 'callback' : function(){
+            var DAY_MILLISECONDS = 1000*60*60*24;
+            var NUMBER_OF_DAYS_TO_CAPTURE = 30;
+            var dataStartDate = new Date(((new Date()).getTime()-DAY_MILLISECONDS*NUMBER_OF_DAYS_TO_CAPTURE));
+            dataStartDate.setHours(0);
+            dataStartDate.setMinutes(0);
+            dataStartDate.setSeconds(0);
+            dataStartDate.setMilliseconds(0);
             $.ajax({
                 type: "GET",
                 dataType: "json",
@@ -92,21 +101,27 @@ $.ajax({
             $.ajax({
                 type: "GET",
                 dataType: "json",
-                url: 'http://127.0.0.1:5000/dash-q/dataservice/streams_chart?stream=Q000',
+                url: 'http://127.0.0.1:5000/dash-q/dataservice/streams_chart?stream=Q000&startdate=' + dataStartDate.toISOString(),
                 success: function(jsonData) { drawLineChart(jsonData, "Q000", "chart_div_s0"); }
             });
             $.ajax({
                 type: "GET",
                 dataType: "json",
-                url: 'http://127.0.0.1:5000/dash-q/dataservice/streams_chart?stream=Q003',
+                url: 'http://127.0.0.1:5000/dash-q/dataservice/streams_chart?stream=Q003&startdate=' + dataStartDate.toISOString(),
                 success: function(jsonData) { drawLineChart(jsonData, "Q003", "chart_div_s3"); }
             });
 
         }});
         return true;
     }
-});
+    });
+}
 
+
+$( document ).ready(function() {
+    loadCharts();
+    setInterval(loadCharts, 30000);
+});
 
 </script>
 
