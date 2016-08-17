@@ -9,8 +9,14 @@ html, body {
     overflow: visible;
 }
 
-.quad-div {
+.single-div {
     width: 100%;
+    height: 50%;
+    margin: 0px -1px;
+}
+
+.double-div {
+    width: 50%;
     height: 50%;
     margin: 0px -1px;
 }
@@ -110,6 +116,12 @@ function loadCharts(){
                 url: '/dash-q/dataservice/streams_chart?stream=Q003&startdate=' + dataStartDate.toISOString(),
                 success: function(jsonData) { drawLineChart(jsonData, "Q003", "chart_div_s3"); }
             });
+            $.ajax({
+                type: "GET",
+                dataType: "json",
+                url: '/dash-q/dataservice/streams_chart?stream=Q004&startdate=' + dataStartDate.toISOString(),
+                success: function(jsonData) { drawLineChart(jsonData, "Q004", "chart_div_s4"); }
+            });
 
         }});
         return true;
@@ -131,8 +143,9 @@ $( document ).ready(function() {
 </head>
 <body>
     <div style="width: 100%; height: 70%;">
-        <div id="chart_div_s0" class="quad-div"></div>
-        <div id="chart_div_s3" class="quad-div bottom"></div>
+        <div id="chart_div_s0" class="single-div"></div>
+        <div id="chart_div_s3" class="double-div pull-left bottom"></div>
+        <div id="chart_div_s4" class="double-div pull-right bottom"></div>
     </div>
     <div id="bar_chart_div" style="display:block; margin-left:auto; margin-right:auto;" align="center"></div>
 </body>
