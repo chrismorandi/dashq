@@ -95,19 +95,19 @@ function loadCharts(){
             $.ajax({
                 type: "GET",
                 dataType: "json",
-                url: 'http://127.0.0.1:5000/dash-q/dataservice/streams_bar_chart',
+                url: '/dash-q/dataservice/streams_bar_chart',
                 success: function(jsonData) { drawBarChart(jsonData.data); }
             });
             $.ajax({
                 type: "GET",
                 dataType: "json",
-                url: 'http://127.0.0.1:5000/dash-q/dataservice/streams_chart?stream=Q000&startdate=' + dataStartDate.toISOString(),
+                url: '/dash-q/dataservice/streams_chart?stream=Q000&startdate=' + dataStartDate.toISOString(),
                 success: function(jsonData) { drawLineChart(jsonData, "Q000", "chart_div_s0"); }
             });
             $.ajax({
                 type: "GET",
                 dataType: "json",
-                url: 'http://127.0.0.1:5000/dash-q/dataservice/streams_chart?stream=Q003&startdate=' + dataStartDate.toISOString(),
+                url: '/dash-q/dataservice/streams_chart?stream=Q003&startdate=' + dataStartDate.toISOString(),
                 success: function(jsonData) { drawLineChart(jsonData, "Q003", "chart_div_s3"); }
             });
 
