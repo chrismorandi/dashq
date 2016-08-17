@@ -61,31 +61,12 @@ test_type_mappings = {
     }
 }
 
-
-d = None
-with open('/tmp/out.json') as json_data:
-    d = json.load(json_data)
-
-counter = 0
 es = Elasticsearch()
-
 try:
     es.indices.delete("testsetindex")
 except:
     pass
 es.indices.create("testsetindex")
 es.indices.put_mapping(doc_type="test_set", body=test_type_mappings, index="testsetindex")
-
-for doc in d["root"]:
-    if doc["endDate"] is None:
-        print doc
-    else:
-        try:
-            es.index(index="testsetindex", doc_type="test_set", id=doc["testsetId"], body=doc)
-        except Exception:
-            print doc
-    counter += 1
-
-print counter
 
 

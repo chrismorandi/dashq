@@ -1,8 +1,6 @@
 import MySQLdb.cursors
 import re
-import json
-from datetime import datetime
-
+from elasticsearch import Elasticsearch
 
 expected_tests = (
     "SELECT testset.storm_testset_id, results.qc_id "
@@ -140,15 +138,25 @@ def export_storm_test_results():
     if previous_test_result:
         current_test_set[map_result_to_test_set_counter[previous_test_result[6]]] += 1
         _add_none_run_tests(current_test_set, testset_tests[current_test_set["testsetId"]], run_tests_for_set)
+    return totalsets
 
-    with open("/tmp/out.json", "wt", 10248) as outfile:
-        json.dump(totalsets, outfile, default=json_serial)
+
+def index_testset_documents(testsetdocuments):
+    es = Elasticsearch()
+    counter = 0
+    for doc in testsetdocuments["root"]:
+        try:
+            es.index(index="testsetindex", doc_type="test_set", id=doc["testsetId"], body=doc)
+        except Exception as e:
+            print e
+        counter += 1
+    print "Indexed {} test set documents".format(counter)
 
 
 def main():
-    export_storm_test_results()
+    testsetdocuments = export_storm_test_results()
+    index_testset_documents(testsetdocuments)
 
 
 if __name__ == "__main__":
-    #print _get_testset_collections()
     main()
