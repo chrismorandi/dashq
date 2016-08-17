@@ -119,12 +119,12 @@ def _get_lastbaseline_data(top_bs):
     def format_baseline(bs):
         return [bs[1],
               float(bs[2]["passpercentage"]["value"]), float(bs[2]["failurepercentage"]["value"]),
-              float(bs[2]["inprogresspercentage"]["value"]), float(bs[2]["incompletepercentage"]["value"]),
+              float(bs[2]["incompletepercentage"]["value"]), float(bs[2]["inprogresspercentage"]["value"]),
               float(bs[2]["notrunpercentage"]["value"])]
     return [format_baseline(bs) for bs in top_bs]
 
 def get_data():
-    data = [["Baseline", "Passed", "Failed", "Inprogress", "Incomplete", "Not run"]]
+    data = [["Baseline", "Passed", "Failed", "Incomplete", "Inprogress", "Not run"]]
     print type(data)
     es = Elasticsearch()
     res = es.search(index="testsetindex", body=query)
