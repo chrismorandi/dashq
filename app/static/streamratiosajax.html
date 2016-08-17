@@ -33,6 +33,8 @@ html, body {
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
 
+
+
 function drawBarChart(jsonData){
     var options = {
         title: "Latest baselines",
@@ -50,9 +52,31 @@ function drawBarChart(jsonData){
     var data = google.visualization.arrayToDataTable(jsonData)
     var chart = new google.visualization.BarChart(document.getElementById('bar_chart_div'));
     chart.draw(data, options);
+
+    setInterval(function(){
+        $.ajax({
+            type: "GET",
+            dataType: "json",
+            url: '/dash-q/dataservice/streams_bar_chart',
+            success: function(jsonData) {
+                var data = google.visualization.arrayToDataTable(jsonData.data)
+                chart.draw(data, options);
+            }
+        });
+    }, 20000);
 }
 
 
+function getStartDate(){
+    var DAY_MILLISECONDS = 1000*60*60*24;
+    var NUMBER_OF_DAYS_TO_CAPTURE = 30;
+    var dataStartDate = new Date(((new Date()).getTime()-DAY_MILLISECONDS*NUMBER_OF_DAYS_TO_CAPTURE));
+    dataStartDate.setHours(0);
+    dataStartDate.setMinutes(0);
+    dataStartDate.setSeconds(0);
+    dataStartDate.setMilliseconds(0);
+    return dataStartDate.toISOString();
+}
 
 function drawLineChart(jsonData, label, elementid){
     var options = {
@@ -78,62 +102,64 @@ function drawLineChart(jsonData, label, elementid){
           }
         }
     };
+
     var datatable = new google.visualization.DataTable(jsonData);
     var chart = new google.visualization.LineChart(document.getElementById(elementid));
     chart.draw(datatable, options);
+
+    setInterval(function(){
+        $.ajax({
+         type: "GET",
+            dataType: "json",
+            url: '/dash-q/dataservice/streams_chart?stream='+label+'&startdate=' + getStartDate(),
+            success: function(jsonData) {
+                console.log("Word")
+                var datatable = new google.visualization.DataTable(jsonData);
+                chart.draw(datatable, options);
+            }
+        });
+    }, 600000);
 }
 
-function loadCharts(){
-    console.log("loading charts")
-    $.ajax({
-    url: 'https://www.google.com/jsapi?callback',
-    cache: true,
-    dataType: 'script',
-    success: function(){
-        google.load('visualization', '1', {packages:['corechart', 'bar'], 'callback' : function(){
-            var DAY_MILLISECONDS = 1000*60*60*24;
-            var NUMBER_OF_DAYS_TO_CAPTURE = 30;
-            var dataStartDate = new Date(((new Date()).getTime()-DAY_MILLISECONDS*NUMBER_OF_DAYS_TO_CAPTURE));
-            dataStartDate.setHours(0);
-            dataStartDate.setMinutes(0);
-            dataStartDate.setSeconds(0);
-            dataStartDate.setMilliseconds(0);
-            $.ajax({
-                type: "GET",
-                dataType: "json",
-                url: '/dash-q/dataservice/streams_bar_chart',
-                success: function(jsonData) { drawBarChart(jsonData.data); }
-            });
-            $.ajax({
-                type: "GET",
-                dataType: "json",
-                url: '/dash-q/dataservice/streams_chart?stream=Q000&startdate=' + dataStartDate.toISOString(),
-                success: function(jsonData) { drawLineChart(jsonData, "Q000", "chart_div_s0"); }
-            });
-            $.ajax({
-                type: "GET",
-                dataType: "json",
-                url: '/dash-q/dataservice/streams_chart?stream=Q003&startdate=' + dataStartDate.toISOString(),
-                success: function(jsonData) { drawLineChart(jsonData, "Q003", "chart_div_s3"); }
-            });
-            $.ajax({
-                type: "GET",
-                dataType: "json",
-                url: '/dash-q/dataservice/streams_chart?stream=Q004&startdate=' + dataStartDate.toISOString(),
-                success: function(jsonData) { drawLineChart(jsonData, "Q004", "chart_div_s4"); }
-            });
 
-        }});
-        return true;
-    }
+function loadChartData(){
+    $.ajax({
+        type: "GET",
+        dataType: "json",
+        url: '/dash-q/dataservice/streams_bar_chart',
+        success: function(jsonData) { drawBarChart(jsonData.data); }
+    });
+    $.ajax({
+        type: "GET",
+        dataType: "json",
+        url: '/dash-q/dataservice/streams_chart?stream=Q000&startdate=' + getStartDate(),
+        success: function(jsonData) { drawLineChart(jsonData, "Q000", "chart_div_s0"); }
+    });
+    $.ajax({
+        type: "GET",
+        dataType: "json",
+        url: '/dash-q/dataservice/streams_chart?stream=Q003&startdate=' + getStartDate(),
+        success: function(jsonData) { drawLineChart(jsonData, "Q003", "chart_div_s3"); }
+    });
+    $.ajax({
+        type: "GET",
+        dataType: "json",
+        url: '/dash-q/dataservice/streams_chart?stream=Q004&startdate=' + getStartDate(),
+        success: function(jsonData) { drawLineChart(jsonData, "Q004", "chart_div_s4"); }
     });
 }
 
 
-$( document ).ready(function() {
-    loadCharts();
-    setInterval(loadCharts, 30000);
+$.ajax({
+    url: 'https://www.google.com/jsapi?callback',
+    cache: true,
+    dataType: 'script',
+    success: function(){
+        google.load('visualization', '1', {packages:['corechart', 'bar'], 'callback' : loadChartData });
+        return true;
+    }
 });
+
 
 </script>
 
