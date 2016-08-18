@@ -3,29 +3,29 @@ import re
 from elasticsearch import Elasticsearch
 
 expected_tests = (
-    "SELECT testset.storm_testset_id, results.qc_id "
-    "FROM storm_cycle_testset_details testset "
-    "INNER JOIN `storm_cycle_test_result` results ON results.storm_testset_id = testset.storm_testset_id "
-    "WHERE testset.end_date >= '2016-01-01 00:00:00' "
-    "AND testset.storm_testset_name LIKE 'Auto :: e2e.set%%' "
-    "AND testset.storm_testset_name LIKE '%%.inweek.%%' "
-    "AND testset.storm_testset_status != '' "
+    "SELECT storm_testset_id, qc_id "
+    "FROM storm_cycle_testset_details "
+    "INNER JOIN storm_cycle_test_result USING(storm_testset_id) "
+    "WHERE end_date >= '2016-01-01 00:00:00' "
+    "AND storm_testset_name LIKE 'Auto :: e2e.set%%' "
+    "AND storm_testset_name LIKE '%%.inweek.%%' "
+    "AND storm_testset_status != '' "
 )
 
 
-query = ("SELECT testset.storm_testset_id, testset.storm_testset_name, "
-         "testset.storm_testset_status, run.start_time, run.end_time, run.qc_id, run.run_status "
-         "FROM storm_test_run run "
-         "INNER JOIN storm_test_run_info run_info ON run_info.test_id = run.test_id "
-         "INNER JOIN storm_cycle_testset_details testset ON testset.storm_testset_id = run_info.storm_testset_id "
-         "WHERE run_info.storm_testset_id != 0 "
-         "AND run_info.check_status != 'Discarded' "
-         "AND testset.storm_testset_name LIKE 'Auto :: e2e.set%%' "
-         "AND testset.storm_testset_name LIKE '%%.inweek.%%' "
-         "AND testset.storm_testset_status != '' "
-         "AND testset.end_date >= '2016-01-01 00:00:00' "
-         "AND run.qc_id NOT IN (43, 41, 47, 58, 59, 63, 54, 55, 73, 72) "
-         "ORDER BY storm_testset_name, run.qc_id, run.start_time")
+query = ("SELECT storm_testset_id, storm_testset_name, "
+         "storm_testset_status, start_time, end_time, qc_id, run_status "
+         "FROM storm_test_run "
+         "INNER JOIN storm_test_run_info USING(test_id) "
+         "INNER JOIN storm_cycle_testset_details USING(storm_testset_id) "
+         "WHERE storm_testset_id != 0 "
+         "AND check_status != 'Discarded' "
+         "AND storm_testset_name LIKE 'Auto :: e2e.set%%' "
+         "AND storm_testset_name LIKE '%%.inweek.%%' "
+         "AND storm_testset_status != '' "
+         "AND end_date >= '2016-01-01 00:00:00' "
+         "AND qc_id NOT IN (43, 41, 47, 58, 59, 63, 54, 55, 73, 72) "
+         "ORDER BY storm_testset_name, qc_id, start_time")
 
 
 
