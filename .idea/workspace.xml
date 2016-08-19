@@ -23,18 +23,6 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="streams_google_line_chart_dataservice.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/reporting/streams_google_line_chart_dataservice.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding>
-                <element signature="e#0#39#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="test.json" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/reporting/test.json">
           <provider selected="true" editor-type-id="text-editor">
@@ -80,8 +68,8 @@
       <file leaf-file-name="streamratiosajax.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/static/streamratiosajax.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="306">
-              <caret line="17" column="1" selection-start-line="17" selection-start-column="1" selection-end-line="17" selection-end-column="1" />
+            <state relative-caret-position="126">
+              <caret line="110" column="17" selection-start-line="110" selection-start-column="17" selection-end-line="110" selection-end-column="17" />
               <folding>
                 <element signature="n#style#0;n#div#0;n#h1#0;n#body#0;n#html#0;n#!!top" expanded="true" />
                 <element signature="n#style#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
@@ -160,9 +148,9 @@
         <option value="$PROJECT_DIR$/run.py" />
         <option value="$PROJECT_DIR$/wsgi.py" />
         <option value="$PROJECT_DIR$/reporting/streams_google_stackedbar_chart_dataservice.py" />
-        <option value="$PROJECT_DIR$/reporting/streams_google_line_chart_dataservice.py" />
         <option value="$PROJECT_DIR$/app/views.py" />
         <option value="$PROJECT_DIR$/reporting/export_testset_run_items.py" />
+        <option value="$PROJECT_DIR$/reporting/streams_google_line_chart_dataservice.py" />
         <option value="$PROJECT_DIR$/app/static/streamratiosajax.html" />
       </list>
     </option>
@@ -601,7 +589,14 @@
       <option name="project" value="LOCAL" />
       <updated>1471622049797</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Increase Streams bar chart refresh period&#10;Add clear chart data to graphs for possible memory leak">
+      <created>1471626209868</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1471626209868</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -667,7 +662,8 @@
     <MESSAGE value="Reduce real estate space of bargraph on streams page to fit on full screen" />
     <MESSAGE value="Add MySQL Specific USING clause on JOINS to clean up a little" />
     <MESSAGE value="Add sut_config_instance_details_id for later stb_build tags&#10;Add simple facility to select individual platforms&#10;Make the formating of data BOLDER" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add sut_config_instance_details_id for later stb_build tags&#10;Add simple facility to select individual platforms&#10;Make the formating of data BOLDER" />
+    <MESSAGE value="Increase Streams bar chart refresh period&#10;Add clear chart data to graphs for possible memory leak" />
+    <option name="LAST_COMMIT_MESSAGE" value="Increase Streams bar chart refresh period&#10;Add clear chart data to graphs for possible memory leak" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -983,14 +979,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/reporting/test.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/reporting/streams_google_stackedbar_chart_dataservice.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="408">
@@ -1011,16 +999,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/reporting/streams_google_line_chart_dataservice.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#39#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/reporting/export_testset_run_items.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="540">
@@ -1031,10 +1009,28 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/reporting/streams_google_line_chart_dataservice.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="314">
+          <caret line="119" column="44" selection-start-line="119" selection-start-column="44" selection-end-line="119" selection-end-column="44" />
+          <folding>
+            <element signature="e#0#39#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/reporting/test.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app/static/streamratiosajax.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="17" column="1" selection-start-line="17" selection-start-column="1" selection-end-line="17" selection-end-column="1" />
+        <state relative-caret-position="126">
+          <caret line="110" column="17" selection-start-line="110" selection-start-column="17" selection-end-line="110" selection-end-column="17" />
           <folding>
             <element signature="n#style#0;n#div#0;n#h1#0;n#body#0;n#html#0;n#!!top" expanded="true" />
             <element signature="n#style#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
