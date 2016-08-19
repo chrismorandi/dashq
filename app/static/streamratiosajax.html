@@ -81,10 +81,11 @@ function drawBarChart(jsonData){
             url: '/dash-q/dataservice/streams_bar_chart',
             success: function(jsonData) {
                 var data = google.visualization.arrayToDataTable(jsonData.data)
+                chart.clearChart();
                 chart.draw(data, options);
             }
         });
-    }, 20000);
+    }, 60000);
 }
 
 
@@ -145,6 +146,7 @@ function drawLineChart(jsonData, label, elementid){
             url: '/dash-q/dataservice/streams_chart?stream='+label+'&startdate=' + getStartDate()+ '&platform=' + encodeURIComponent(getPlatformQueryParameter()),
             success: function(jsonData) {
                 var datatable = new google.visualization.DataTable(jsonData);
+                chart.clearChart();
                 chart.draw(datatable, options);
             }
         });
