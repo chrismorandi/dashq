@@ -14,10 +14,11 @@ expected_tests = (
 
 
 query = ("SELECT storm_testset_id, storm_testset_name, "
-         "storm_testset_status, start_time, end_time, qc_id, run_status "
+         "storm_testset_status, start_time, end_time, qc_id, run_status, sut_config_instance_details_id "
          "FROM storm_test_run "
          "INNER JOIN storm_test_run_info USING(test_id) "
-         "INNER JOIN storm_cycle_testset_details USING(storm_testset_id) "
+         "INNER JOIN storm_test_run_sut USING(test_id) "
+         "INNER JOIN storm_cycle_testset_details USING(storm_testset_id)"
          "WHERE storm_testset_id != 0 "
          "AND check_status != 'Discarded' "
          "AND storm_testset_name LIKE 'Auto :: e2e.set%%' "
@@ -26,7 +27,6 @@ query = ("SELECT storm_testset_id, storm_testset_name, "
          "AND end_date >= '2016-01-01 00:00:00' "
          "AND qc_id NOT IN (43, 41, 47, 58, 59, 63, 54, 55, 73, 72) "
          "ORDER BY storm_testset_name, qc_id, start_time")
-
 
 
 run_status_order = {"Fail": 0, "Incomplete": 1, "Unknown": 2,

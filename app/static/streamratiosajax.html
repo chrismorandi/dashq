@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+<title>Dash Q - Streams</title>
 <style>
 html, body {
     padding: 0;
@@ -33,11 +35,30 @@ html, body {
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
 
+function getPlatformQueryParameter(){
+    var platformParam = ""
+    if (getUrlVars()["platform"]){
+        platformParam = getUrlVars()["platform"];
+    }
+    return platformParam;
+}
 
+function getUrlVars()
+{
+    var vars = [], hash;
+    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+    for(var i = 0; i < hashes.length; i++)
+    {
+        hash = hashes[i].split('=');
+        vars.push(hash[0]);
+        vars[hash[0]] = hash[1];
+    }
+    return vars;
+}
 
 function drawBarChart(jsonData){
     var options = {
-        title: "Latest baselines",
+        title: "Latest baseline test result percentages",
         titleTextStyle: {
             fontSize: 35
         },
@@ -84,6 +105,16 @@ function drawLineChart(jsonData, label, elementid){
         titleTextStyle: {
             fontSize: 35
         },
+        lineWidth: 5,
+        pointSize: 12,
+        series: {
+            0: { pointShape: 'circle' },
+            1: { pointShape: 'triangle' },
+            2: { pointShape: 'square' },
+            3: { pointShape: 'diamond' },
+            4: { pointShape: 'star' },
+            5: { pointShape: 'polygon' }
+        },
         annotations: {
           textStyle: {
             fontName: 'Times-Roman',
@@ -111,16 +142,14 @@ function drawLineChart(jsonData, label, elementid){
         $.ajax({
          type: "GET",
             dataType: "json",
-            url: '/dash-q/dataservice/streams_chart?stream='+label+'&startdate=' + getStartDate(),
+            url: '/dash-q/dataservice/streams_chart?stream='+label+'&startdate=' + getStartDate()+ '&platform=' + encodeURIComponent(getPlatformQueryParameter()),
             success: function(jsonData) {
-                console.log("Word")
                 var datatable = new google.visualization.DataTable(jsonData);
                 chart.draw(datatable, options);
             }
         });
     }, 600000);
 }
-
 
 function loadChartData(){
     $.ajax({
@@ -132,42 +161,45 @@ function loadChartData(){
     $.ajax({
         type: "GET",
         dataType: "json",
-        url: '/dash-q/dataservice/streams_chart?stream=Q000&startdate=' + getStartDate(),
+        url: '/dash-q/dataservice/streams_chart?stream=Q000&startdate=' + getStartDate() + '&platform=' + encodeURIComponent(getPlatformQueryParameter()),
         success: function(jsonData) { drawLineChart(jsonData, "Q000", "chart_div_s0"); }
     });
     $.ajax({
         type: "GET",
         dataType: "json",
-        url: '/dash-q/dataservice/streams_chart?stream=Q003&startdate=' + getStartDate(),
+        url: '/dash-q/dataservice/streams_chart?stream=Q003&startdate=' + getStartDate() + '&platform=' + encodeURIComponent(getPlatformQueryParameter()),
         success: function(jsonData) { drawLineChart(jsonData, "Q003", "chart_div_s3"); }
     });
     $.ajax({
         type: "GET",
         dataType: "json",
-        url: '/dash-q/dataservice/streams_chart?stream=Q004&startdate=' + getStartDate(),
+        url: '/dash-q/dataservice/streams_chart?stream=Q004&startdate=' + getStartDate() + '&platform=' + encodeURIComponent(getPlatformQueryParameter()),
         success: function(jsonData) { drawLineChart(jsonData, "Q004", "chart_div_s4"); }
     });
 }
 
+function writeDocumentHeading(){
+    var platform = getPlatformQueryParameter();
+    $("#titleDiv").text("Inweek pass percentages for " + (platform != "" ? platform : " All Active Platforms"))
+}
 
-$.ajax({
-    url: 'https://www.google.com/jsapi?callback',
-    cache: true,
-    dataType: 'script',
-    success: function(){
-        google.load('visualization', '1', {packages:['corechart', 'bar'], 'callback' : loadChartData });
-        return true;
-    }
+$(function() {
+    writeDocumentHeading();
+    $.ajax({
+        url: 'https://www.google.com/jsapi?callback',
+        cache: true,
+        dataType: 'script',
+        success: function(){
+            google.load('visualization', '1', {packages:['corechart', 'bar', 'line'], 'callback' : loadChartData });
+            return true;
+        }
+    });
+
 });
-
-
 </script>
-
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
 </head>
 <body>
+    <h1><div id="titleDiv" style="text-align:center; font-family: Arial">Inweek XWING pass percentage</div></h1>
     <div style="width: 100%; height: 70%;">
         <div id="chart_div_s0" class="single-div"></div>
         <div id="chart_div_s3" class="double-div pull-left bottom"></div>

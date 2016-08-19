@@ -1,6 +1,7 @@
 from elasticsearch import Elasticsearch
 from operator import itemgetter
 import json
+import copy
 
 query = {
     "size": 0,
@@ -9,6 +10,9 @@ query = {
             "must": [
                 {
                     "match": {"stream": ""}
+                },
+                {
+                    "match": {"platform.raw": ""}
                 },
                 {
                     "range": {
@@ -150,11 +154,16 @@ def _get_row_data(known_platforms, stream):
     return [process_baseline(b) for b in sorted(stream["baseline"]["buckets"], key=itemgetter("key"))]
 
 
-def get_data(stream, start_date):
+def get_data(stream, platform, start_date):
     es = Elasticsearch()
-    query["query"]["bool"]["must"][0]["match"]["stream"] = stream
-    query["query"]["bool"]["must"][1]["range"]["startDate"]["gte"] = start_date
-    res = es.search(index="testsetindex", body=query)
+    current_query = copy.deepcopy(query)
+    current_query["query"]["bool"]["must"][0]["match"]["stream"] = stream
+    current_query["query"]["bool"]["must"][1]["match"]["platform.raw"] = platform
+    current_query["query"]["bool"]["must"][2]["range"]["startDate"]["gte"] = start_date
+    if platform is None:
+        del current_query["query"]["bool"]["must"][1]
+    print current_query
+    res = es.search(index="testsetindex", body=current_query)
     if res and res["hits"]["total"] > 0:
         stream = res["aggregations"]["streams"]["buckets"][0]
         known_platforms = _get_platforms_for_stream(stream)
@@ -164,4 +173,4 @@ def get_data(stream, start_date):
         return json.dumps({"cols": "", "rows": ""})
 
 if "__main__":
-    print get_data("q001", "2016-08-07T00:00:00.000Z")
+    print get_data("q000", None, "2016-08-07T00:00:00.000Z")
