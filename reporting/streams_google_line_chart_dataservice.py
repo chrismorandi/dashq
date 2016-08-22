@@ -133,22 +133,17 @@ def _get_row_data(known_platforms, stream):
         else:
             return ""
 
-    def baseline_accuracy(baseline):
-        if baseline in ["000.13.00", "007.67.00"]:
-            return False
-        else:
-            return True
-
     def process_baseline(b):
         '''
             {"c": [{"v": "000.12.00"}, {"v": 2}, {"v": 0.8333333333333334}, {"v": 1.75}, {"v": ""},  {"v": true}]}
         '''
         platforms_values = {p["key"]: p["passfailure_percentage"]["value"] for p in b["platform"]["buckets"]}
+        still_to_complete = [p["inprogress"]["value"] > 0 or p["notstarted"]["value"] > 0 for p in b["platform"]["buckets"]]
         return {"c": [{"v": b["key"]}]
                      + [{"v": int(platforms_values[kp]) if kp in platforms_values else 0} for kp in known_platforms]
                      + [{"v": baseline_annotations(b["key"])}]
                      + [{"v": baseline_annotations(b["key"])}]
-                     + [{"v": baseline_accuracy(b["key"])}]
+                     + [{"v": True not in still_to_complete }]
                }
 
     return [process_baseline(b) for b in sorted(stream["baseline"]["buckets"], key=itemgetter("key"))]
