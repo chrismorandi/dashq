@@ -14,10 +14,9 @@ expected_tests = (
 
 
 query = ("SELECT storm_testset_id, storm_testset_name, "
-         "storm_testset_status, start_time, end_time, qc_id, run_status, sut_config_instance_details_id "
+         "storm_testset_status, start_time, end_time, qc_id, run_status, runs_required "
          "FROM storm_test_run "
          "INNER JOIN storm_test_run_info USING(test_id) "
-         "INNER JOIN storm_test_run_sut USING(test_id) "
          "INNER JOIN storm_cycle_testset_details USING(storm_testset_id)"
          "WHERE storm_testset_id != 0 "
          "AND check_status != 'Discarded' "
@@ -27,6 +26,17 @@ query = ("SELECT storm_testset_id, storm_testset_name, "
          "AND end_date >= '2016-01-01 00:00:00' "
          "AND qc_id NOT IN (43, 41, 47, 58, 59, 63, 54, 55, 73, 72) "
          "ORDER BY storm_testset_name, qc_id, start_time")
+
+
+RESULT_STORM_TESTSET_ID = 0
+RESULT_STORM_TESTSET_NAME = 1
+RESULT_STORM_TEST_STATUS = 2
+RESULT_START_TIME = 3
+RESULT_END_TIME = 4
+RESULT_QC_ID = 5
+RESULT_RUN_STATUS = 6
+RESULT_RUNS_REQUIRED = 7
+
 
 
 run_status_order = {"Fail": 0, "Incomplete": 1, "Unknown": 2,
@@ -46,14 +56,14 @@ def new_test_set(current_test_result, totalsets):
         return None
     mg = match.groupdict()
 
-    test_set = {"testsetId": current_test_result[0],
+    test_set = {"testsetId": current_test_result[RESULT_STORM_TESTSET_ID],
                 "testsetType": mg["type"],
                 "stream": mg["stream"],
                 "baseline": mg["baseline"],
                 "platform": mg["platform"],
-                "startDate": current_test_result[3],
-                "endDate": current_test_result[4] if isinstance(current_test_result[4], datetime)
-                                                                else current_test_result[3],
+                "startDate": current_test_result[RESULT_START_TIME],
+                "endDate": current_test_result[RESULT_END_TIME] if isinstance(current_test_result[RESULT_END_TIME], datetime)
+                                                                else current_test_result[RESULT_START_TIME],
                 "testsFailed": 0, "testsIncomplete": 0, "testsUnknown": 0, "testsNotCovered": 0,
                 "testsInProgress": 0, "testsNotStarted": 0, "testsPassed": 0
                 }
@@ -93,9 +103,28 @@ def _get_testset_collections():
     finally:
         con.close()
 
+
 def _add_none_run_tests(test_set, testset_tests, tests_recorded):
     diff = testset_tests.difference(tests_recorded)
     test_set[map_result_to_test_set_counter["Not Started"]] += len(diff)
+
+
+def _complete_test_result_from_runs(test_set, run_statuses, test_run):
+    if "In Progress" in run_statuses:
+        test_set[map_result_to_test_set_counter["In Progress"]] += 1
+        return
+    filtered_items = tuple(r for r in run_statuses if r != "Incomplete")
+    if (len(filtered_items) < test_run[RESULT_RUNS_REQUIRED]):
+        test_set[map_result_to_test_set_counter["Incomplete"]] += 1
+        return
+    if "Fail" in filtered_items:
+        test_set[map_result_to_test_set_counter["Fail"]] += 1
+        return
+    if "Pass" in filtered_items:
+        test_set[map_result_to_test_set_counter["Pass"]] += 1
+        return
+    test_set[map_result_to_test_set_counter["Unknown"]] += 1
+
 
 def export_storm_test_results():
     testset_tests = _get_testset_collections()
@@ -106,37 +135,39 @@ def export_storm_test_results():
     previous_test_result = cursor.fetchone()
     current_test_set = new_test_set(previous_test_result, totalsets)
     run_tests_for_set = set()
+    run_statuses = []
     for current_test_result in cursor:
         # for each test set determined by the testset name
         if current_test_set is None or current_test_result[0] != current_test_set["testsetId"]:
             if previous_test_result:
-                current_test_set[map_result_to_test_set_counter[previous_test_result[6]]] += 1
+                run_statuses.append(previous_test_result[RESULT_RUN_STATUS])
+                _complete_test_result_from_runs(current_test_set, run_statuses, previous_test_result)
                 _add_none_run_tests(current_test_set, testset_tests[current_test_set["testsetId"]], run_tests_for_set)
                 run_tests_for_set = set()
             current_test_set = new_test_set(current_test_result, totalsets)
+            run_statuses = []
             if current_test_set is None:
                 continue
             previous_test_result = None
 
-        if current_test_result[3] < current_test_set["startDate"]:
+        if current_test_result[RESULT_START_TIME] < current_test_set["startDate"]:
             current_test_set["startDate"] = current_test_result[3]
 
-        if isinstance(current_test_result[4], datetime) and current_test_result[4] > current_test_set["endDate"]:
-            current_test_set["endDate"] = current_test_result[4]
+        if isinstance(current_test_result[RESULT_END_TIME], datetime) and current_test_result[RESULT_END_TIME] > current_test_set["endDate"]:
+            current_test_set["endDate"] = current_test_result[RESULT_END_TIME]
 
         if previous_test_result:
-            if previous_test_result[5] == current_test_result[5]:
-                # lower order runs (e.g. Fail) trump higher order (Pass)
-                if run_status_order[previous_test_result[6]] < run_status_order[current_test_result[6]]:
-                    # So skip this item
-                    continue
-            else:
-                current_test_set[map_result_to_test_set_counter[previous_test_result[6]]] += 1
+            run_statuses.append(previous_test_result[RESULT_RUN_STATUS])
+            if previous_test_result[RESULT_QC_ID] != current_test_result[RESULT_QC_ID]:
+                _complete_test_result_from_runs(current_test_set, run_statuses, previous_test_result)
+                run_statuses = []
+
         previous_test_result = current_test_result
         run_tests_for_set.add(previous_test_result[5])
     # for the last test result make sure to update the totals
     if previous_test_result:
-        current_test_set[map_result_to_test_set_counter[previous_test_result[6]]] += 1
+        run_statuses.append(current_test_result[RESULT_RUN_STATUS])
+        _complete_test_result_from_runs(current_test_set, run_statuses, previous_test_result)
         _add_none_run_tests(current_test_set, testset_tests[current_test_set["testsetId"]], run_tests_for_set)
     return totalsets
 
