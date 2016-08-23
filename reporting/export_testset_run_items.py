@@ -1,5 +1,10 @@
 import MySQLdb.cursors
+import os
+from os.path import expanduser
 import re
+import yaml
+
+
 from elasticsearch import Elasticsearch
 
 expected_tests = (
@@ -81,11 +86,14 @@ def json_serial(obj):
     raise TypeError ("Type not serializable")
 
 def _get_sql_connection():
-    return MySQLdb.connect(host='10.20.32.99',
-                          port=3306,
-                          user='auto_ethan',
-                          passwd='useC0nf1gFile',
-                          db='ethan_autodb')
+    config_path = os.getenv("DASH_Q_CONFIG", os.path.join(expanduser("~"), "dashq", "config", "reporting.yaml"))
+    with open(config_path) as config_file:
+        config_yaml = yaml.load(config_file)
+        return MySQLdb.connect(host=config_yaml["database"]["host"],
+                          port=config_yaml["database"]["port"],
+                          user=config_yaml["database"]["user"],
+                          passwd=config_yaml["database"]["passwd"],
+                          db=config_yaml["database"]["db"])
 
 
 def _get_testset_collections():
