@@ -112,6 +112,7 @@ function drawLineChart(jsonData, label, elementid){
         titleTextStyle: {
             fontSize: 35
         },
+        isStacked: true,
         lineWidth: 5,
         pointSize: 12,
         series: {
@@ -124,7 +125,7 @@ function drawLineChart(jsonData, label, elementid){
         },
         vAxes: {
           // Adds labels to each axis; they don't have to match the axis names.
-          0: {'title': 'Pass Percentage', minValue: 0, maxValue: 100},
+            0: {'title': 'Pass Percentage', minValue: 0, maxValue: 400},
         },
         hAxes: {
           // Adds labels to each axis; they don't have to match the axis names.
@@ -146,15 +147,14 @@ function drawLineChart(jsonData, label, elementid){
     };
 
     var datatable = new google.visualization.DataTable(jsonData);
-    var chart = new google.visualization.LineChart(document.getElementById(elementid));
+    var chart = new google.visualization.AreaChart(document.getElementById(elementid));
     chart.draw(datatable, options);
 
     setInterval(function(){
         $.ajax({
          type: "GET",
             dataType: "json",
-            url: '/dash-q/dataservice/streams_line_chart?stream='+label+'&startdate=' + getStartDate()+ '&platform=' +
-                encodeURIComponent(getPlatformQueryParameter()),
+            url: '/dash-q/dataservice/streams_line_chart?stream='+label+'&startdate=' + getStartDate()+ '&platform=' + encodeURIComponent(getPlatformQueryParameter()),
             success: function(jsonData) {
                 var datatable = new google.visualization.DataTable(jsonData);
                 chart.clearChart();
