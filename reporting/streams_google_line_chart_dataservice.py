@@ -116,11 +116,7 @@ def _get_column_data(known_platforms):
 
 
 def _get_platforms_for_stream(stream):
-    known_platforms = set()
-    for bl in stream["baseline"]["buckets"]:
-        for p in bl["platform"]["buckets"]:
-            known_platforms.add(p["key"])
-    return sorted(known_platforms)
+    return ["45D1", "MULT+45D1", "XWNG", "MULT+XWNG", "UKV2", "MULT+UKV2"]
 
 
 def _get_row_data(known_platforms, stream):
@@ -143,7 +139,7 @@ def _get_row_data(known_platforms, stream):
                      + [{"v": int(platforms_values[kp]) if kp in platforms_values else 0} for kp in known_platforms]
                      + [{"v": baseline_annotations(b["key"])}]
                      + [{"v": baseline_annotations(b["key"])}]
-                     + [{"v": True not in still_to_complete }]
+                     + [{"v": True not in still_to_complete}]
                }
 
     return [process_baseline(b) for b in sorted(stream["baseline"]["buckets"], key=itemgetter("key"))]
