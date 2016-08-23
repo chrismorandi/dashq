@@ -157,7 +157,7 @@ def get_data(stream, platform, start_date):
     res = es.search(index="testsetindex", body=current_query)
     if res and res["hits"]["total"] > 0:
         stream = res["aggregations"]["streams"]["buckets"][0]
-        known_platforms = _get_platforms_for_stream(stream)
+        known_platforms = _get_platforms_for_stream(stream) if platform is None else [platform]
         return json.dumps({"cols": _get_column_data(known_platforms),
                            "rows": _get_row_data(known_platforms, stream)})
     else:
